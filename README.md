@@ -21,3 +21,18 @@ r：MLP
    对于三维点的旋转只需乘以一个 3 × 3的旋转矩阵，即可将其矫正；同样的将点云映射到K维的冗余空间后，也是学习一个k×k的旋转矩阵，只不过因为旋转矩阵具有正交性，因此这次校对需要引入一个正则化惩罚项，希望其尽可能接近于一个正交矩阵。
    ![img_2.png](img_2.png)
 
+## pointnet++(点云版Unet)
+![pointnet++.png](imgs/pointnet++.png)
+
+## VoxelNet
+![img_3.png](imgs/VoxelNet.png)
+
+## SECOND
+![img_3.png](imgs/SECOND.png)
+[pytorch代码](https://github.com/traveller59/second.pytorch)
+
+## PointPillars
+![img_3.png](imgs/PointPillars.png)
+
+## 3DSSD
+
