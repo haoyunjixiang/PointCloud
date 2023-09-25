@@ -2,6 +2,7 @@
 PointCloud knowledge
 
 ## pointnet
+![img_3.png](imgs/pointnet.png)
 3D点云的挑战:
 1. 以无序点云作为输入，因此模型需要具备排序不变性
 2. 点云的旋转，平移不应该改变点云的类别，因此模型需要具备几何变换不变性
@@ -21,9 +22,52 @@ r：MLP
    对于三维点的旋转只需乘以一个 3 × 3的旋转矩阵，即可将其矫正；同样的将点云映射到K维的冗余空间后，也是学习一个k×k的旋转矩阵，只不过因为旋转矩阵具有正交性，因此这次校对需要引入一个正则化惩罚项，希望其尽可能接近于一个正交矩阵。
    ![img_2.png](img_2.png)
 
+代码实现：
+1. MLP
+```python
+self.conv1 = torch.nn.Conv1d(3, 64, 1)
+self.conv2 = torch.nn.Conv1d(64, 128, 1)
+self.conv3 = torch.nn.Conv1d(128, 1024, 1)
+```
+2. Tnet
+```python
+    def forward(self, x):
+        batchsize = x.size()[0]
+        x = F.relu(self.bn1(self.conv1(x)))
+        x = F.relu(self.bn2(self.conv2(x)))
+        x = F.relu(self.bn3(self.conv3(x)))
+        x = torch.max(x, 2, keepdim=True)[0]
+        x = x.view(-1, 1024)
+
+        x = F.relu(self.bn4(self.fc1(x)))
+        x = F.relu(self.bn5(self.fc2(x)))
+        x = self.fc3(x)
+
+        iden = Variable(torch.from_numpy(np.eye(self.k).flatten().astype(np.float32))).view(1,self.k*self.k).repeat(batchsize,1)
+        if x.is_cuda:
+            iden = iden.cuda()
+        x = x + iden
+        x = x.view(-1, self.k, self.k)
+        return x
+```
+
+
 ## pointnet++(点云版Unet)
 ![pointnet++.png](imgs/pointnet++.png)
-
+主要特点：
+1. 使用FPS 进行采样
+2. 模仿CNN进行局部特征的提取，具体如下：
+   + 选取N个中心点
+   + 对中心点选取K个紧邻点
+   + 每K个近邻点进行pointnet卷积运算得到特征，此时网络的输出为（N,K,d+c)
+3. 点云不均匀的时候，在密集区域学习出来的特征可能不适合稀疏区域(个人感觉是模仿感受野不断扩大)
+   ![img_3.png](imgs/msg&mgr.png)
+   + MSG:对方法MSG而言，是对不同半径的子区域进行特征提取后进行特征堆叠，特征提取过程还是采用了PointNet
+   + MGR:作者是考虑到上述的MSG方法计算量太大，提出来的备选方案MRG。MRG用两个Pointnet对连续的两层分别做特征提取与聚合，然后再进行特征拼接。
+4. 分割跳跃层连接：提出了一种利用基于距离插值的分层特征传播（Feature Propagation）策略。
+   + 基于k近邻的反向距离加权平均的插值方式，实现了丢失点（待插值点）特征的求解。
+   ![img_3.png](imgs/point++_skip.png)
+   + 将插值特征与先前阶段的特征（两者具有相同数量的特征点）通过skip-link的结构连接后进行特征堆叠。 
 ## VoxelNet
 ![img_3.png](imgs/VoxelNet.png)
 
