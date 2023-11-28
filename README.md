@@ -70,7 +70,10 @@ self.conv3 = torch.nn.Conv1d(128, 1024, 1)
    + 将插值特征与先前阶段的特征（两者具有相同数量的特征点）通过skip-link的结构连接后进行特征堆叠。 
 ## VoxelNet
 ![img_3.png](imgs/VoxelNet.png)
-
+1. 体素分割，沿着Z,Y,X轴分出D * H * W 个体素
+2. 对每个体素进行特征提取，类似pointnet，先逐点进行特征提取，然后最大池化，进行拼接。
+3. 得到每个体素的特征后，对应一个通道为C的一维特征向量，对于整个点云来说得到C * D * H * W的4维特征向量，然后进行3D卷积提取特征
+4. 对步骤3得到的特征图进行RPN操作。
 ## SECOND
 ![img_3.png](imgs/SECOND.png)
 [pytorch代码](https://github.com/traveller59/second.pytorch)
