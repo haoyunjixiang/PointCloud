@@ -97,3 +97,29 @@ self.conv3 = torch.nn.Conv1d(128, 1024, 1)
    + 每个候选点到其对应的实例Gt bbox中心点的距离
    + 每个候选点对应的实例Gt bbox的尺度信息
    + 每个候选点对应的实例Gt bbox的转角信息，引入了bin+res的形式进行回归
+   
+## BEV方法
+什么是BEV？
++ 鸟瞰视角（Bird's Eye View，简称BEV）是一种从上方观看对象或场景的视角，就像鸟在空中俯视地面一样。在自动驾驶和机器人领域，通过传感器（如LiDAR和摄像头）获取的数据通常会被转换成BEV表示，以便更好地进行物体检测、路径规划等任务。BEV能够将复杂的三维环境简化为二维图像，这对于在实时系统中进行高效的计算尤其重要。
+
+BEV的优势
++ 简化的视角: BEV将三维空间简化为二维，这样可以在计算和存储上节省大量资源。
++ 视觉效果: BEV提供了一种独特的视觉效果，使得场景中的物体和空间关系更加清晰可见。
++ 方便处理: 在BEV中处理物体检测、跟踪和分类等任务相较于直接在原始3D数据中处理要简单得多。
++ 便于融合和下游任务处理：与lidar融合更为方便，对下游路径规划控制等任务也更友好。通用坐标系
++ 尺度一致：相机检测会出现近大远小的情况，BEV同类目标尺度差异几乎没有，更容易学习特征尺度一致性。
+
+### DETR3D（CoRL 2021） DETR3D: 3D Object Detection from Multi-view Images via 3D-to-2D Queries
+
+### BEVDet: High-Performance Multi-Camera 3D Object Detection in Bird-Eye-View（2021.12）
+
+### ImVoxelNet（WACV 2022） Image to Voxels Projection for Monocular and Multi-View General-Purpose 3D Object Detection
+
+### PETR（ECCV2022.03）Position Embedding Transformation for Multi-View 3D Object Detection
+### PETRv2（ECCV2022.06）
+### BEVFormer（ECCV 2022）BEVFormer: Learning Bird's-Eye-View Representation from Multi-Camera Images via Spatiotemporal Transformers
+
+### BEVDepth（arxiv2022）BEVDepth: Acquisition of Reliable Depth for Multi-view 3D Object Detection
+
+### BEVDet4D (2022) BEVDet4D: Exploit Temporal Cues in Multi-camera 3D Object Detection
+### BEVFusion (2022.05) BEVFusion: Multi-Task Multi-Sensor Fusion with Unified Bird’s-Eye View Representation
