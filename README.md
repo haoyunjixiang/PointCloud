@@ -109,7 +109,29 @@ BEV的优势
 + 便于融合和下游任务处理：与lidar融合更为方便，对下游路径规划控制等任务也更友好。通用坐标系
 + 尺度一致：相机检测会出现近大远小的情况，BEV同类目标尺度差异几乎没有，更容易学习特征尺度一致性。
 
-### DETR3D（CoRL 2021） DETR3D: 3D Object Detection from Multi-view Images via 3D-to-2D Queries
+### DETR3D（CoRL 2021.10） DETR3D: 3D Object Detection from Multi-view Images via 3D-to-2D Queries
+#### DETR
+DETR是Facebook提出的基于Transformer的端到端目标检测网络，发表于ECCV2020。[开源代码](https://github.com/facebookresearch/detr)
+![img_3.png](imgs/DETR.png)
+1. DETR的思路是将backbone输出特征图的像素展开成一维后当成了序列长度，而batch和channel的定义不变。flatten NxCxHxW to HWxNxC。
+2. DETR在计算attention的时候没有使用masked attention，因为将特征图展开成一维以后，所有像素都可能是互相关联的，因此没必要规定mask。
+3. 根据Encoder编码的特征，Decoder将100个查询转化成100个目标（因此若图像超过100个目标，检测会出问题）。object predictions和ground truth box之间进行二分匹配。DETR使用匈牙利算法来完成这一匹配过程,因此省去了NMS操作。
+
+#### DETR3D
+
+![img_3.png](imgs/deter3d.png)
+1. 遵循 2D 视觉中的常见做法，使用共享的 ResNet 主干从相机图像中提取特征，视需要使用特征金字塔FPN加强这些特征。
+2. 一个以几何感知方式将计算的2D特征和3D包络框预测集合进行进行连接的检测头，这也是我们的主要贡献。检测头的每一层都从一组稀疏的目标查询开始，这些查询是从数据中学习的。每个目标查询编码一个3D位置，该位置投影到相机平面并通过双线性插值用于收集图像特征。和DERT类似，我们然后使用多头注意力通过合并目标交互来优化目标查询。这一层会重复多次，在特征采样和目标查询优化之间交替。
+   
+   从蓝色开始看到红色，实际上所有虚线加起来的操作就是向右黑线,按照虚线的顺序依次解读下以上的操作：
+   +  首先明确，object queries是类似DETR那样，即先随机生成 M个bounding box，类似先生成一堆anchor box，只不过这里的box是会被最后的loss梯度回传的。
+   + （蓝线）然后通过一个子网络，来对query预测一个三维空间中的参考点 Cei（实际上就是3D bbox的中心）。通过角标我们可以看出，这个操作是layer-wise、query-wise的。这两个wise的概念参见下文的讨论。
+   + （绿线）利用相机参数，将这个3D参考点反投影回图像中，找到其在原始图像中对应的位置。
+   + （黄线）从图像中的位置出发，找到其在每个layer中对应的特征映射中的部分。
+   + （红线）利用多头注意力机制，将找出的特征映射部分对queries进行refine。这种refine过程是逐层进行的，理论上，更靠后的layer应该会吸纳更多的特征信息。
+   + （黑色虚线框之后）得到新的queries之后，再通过两个子网络分别预测bounding box和类别，然后就进入我们之前讨论的loss部分了。
+3. 最后，我们使用set-to-set损失来训练网络。
+
 
 ### BEVDet: High-Performance Multi-Camera 3D Object Detection in Bird-Eye-View（2021.12）
 
